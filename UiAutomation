@@ -1,0 +1,60 @@
+// TC-1
+WebDriver driver = new ChromeDriver();
+driver.get("https://blockstream.info/block/000000000000000000076c036ff5119e5a5a74df77abf64203473364509f7732");
+
+String expectedValue = "25 of 2875 Transactions";
+String browserTitle = driver.getTitle();
+
+if (browserTitle.startsWith("Block #68000")) { // Fixed startsWith()
+
+    try {
+        WebElement element = driver.findElement(By.xpath("//div[@class='transactions']//h3"));
+
+        String sectionHeading = element.getText();
+
+        if (sectionHeading.equals(expectedValue)) {
+            System.out.println("TC passed as value matches");
+        } else {
+            System.out.println("TC failed. Expected: " + expectedValue + " Found: " + sectionHeading);
+        }
+
+    } catch (NoSuchElementException e) {
+        System.out.println("Section heading not exists.");
+    }
+
+} else {
+    System.out.println("Failed to load page");
+}
+
+
+// TC-02
+String txnXpath = "//div[@class='transaction-box']";
+List<WebElement> element = driver.findElements(By.xpath(txnXpath));
+
+if (!element.isEmpty()) { // Corrected check for non-empty list
+    for (int i = 0; i < element.size(); i++) {
+
+        String inputXpath = txnXpath + "[" + (i + 1) + "]" + "//div[@class='vin-header-container']";
+        List<WebElement> input = driver.findElements(By.xpath(inputXpath));
+
+        String outputXpath = txnXpath + "[" + (i + 1) + "]" + "//div[@class='vout-header-container']";
+        List<WebElement> output = driver.findElements(By.xpath(outputXpath));
+
+        if (!input.isEmpty() && !output.isEmpty() && input.size() == 1 && output.size() == 2) {
+            String txnHash = txnXpath + "[" + (i + 1) + "]" + "//div[@class = 'txn']";
+            WebElement txnHashEle = driver.findElement(By.xpath(txnHash));
+
+            if (txnHashEle != null) {
+                System.out.println("Txn hash: " + txnHashEle.getText());
+            } else {
+                System.out.println("Txn hash does not exist.");
+            }
+
+        } else {
+            System.out.println("Input or Output transaction not matching with requirement.");
+        }
+
+    }
+} else {
+    System.out.println("Transaction details not exist on page");
+}
